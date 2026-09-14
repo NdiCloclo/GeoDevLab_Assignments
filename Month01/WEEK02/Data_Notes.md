@@ -1,78 +1,138 @@
-# Data Note — Yaoundé Geospatial Project
+# Week 2 — Data Note
 
-## Project Question
+## Project
 
-Which areas of Yaoundé contain the largest populations living in low-lying areas within 200 metres of a waterway?
+**Question:** Which neighborhoods in Yaoundé contain the largest populations living in low-lying areas within 200 metres of a waterway?
 
-## 1. OpenStreetMap — Cameroon
+This week's work focused on acquiring, opening, checking and preparing the datasets required for the project.
 
-**File:** `Cameroon-260910.osm.pbf`
+---
 
-**Source:** OpenStreetMap data downloaded from Geofabrik  
-https://download.geofabrik.de/africa/cameroon.html
+## 1. OpenStreetMap / Geofabrik Cameroon
 
-**Purpose:** Provides the spatial data needed to identify the Yaoundé study area and mapped waterways.
+**Source:** OpenStreetMap data distributed through Geofabrik
 
-**Format:** `.osm.pbf`
+**Source link:** https://download.geofabrik.de/africa/cameroon.html
 
-**Geometry:** The OSM extract contains multiple vector layers, including points, lines and multipolygons.
+**Original file:** `Cameroon-260910.osm.pbf`
 
-**Features:** The `lines` layer contains a very large number of features and was successfully opened in QGIS. The exact total feature count is still being verified. The `multipolygons` layer currently displays 99 features in QGIS.
+**Purpose:** Provide mapped geographic features for Yaoundé, including administrative boundaries, linear features, points and polygons. The Yaoundé study-area layers were derived from the Cameroon extract in QGIS.
 
-**Key columns:** OSM attribute fields include information such as `name`, `waterway`, `boundary`, and `admin_level`, depending on the layer.
+### Yaoundé administrative units
 
-**Data quality / gaps:** Many attribute fields are sparsely populated. In the initial inspection of the `lines` layer, the `waterway` field contained values for only a small number of observed features, while most records were empty. This requires further investigation to determine how waterways are represented in the OSM extract and which features should be used for the project.
+**File:** `yaounde_admin_units.gpkg`
 
-## 2. SRTM Elevation — Cameroon
+- Feature count: 7
+- Geometry: Polygon
+- Key columns: `type`, `admin_level`, `boundary`, `name`
+- Missing values: No major missing values identified in the key administrative fields used for the project.
 
-**File:** `cmr_srtm_topo_100m.tif`
+### Yaoundé boundary
 
-**Source:** WorldPop  
-https://hub.worldpop.org/geodata/summary?id=23306
+**File:** `yaounde_boundary.gpkg`
 
-**Purpose:** Provides elevation data for identifying relatively low-lying terrain within the Yaoundé study area.
+- Feature count: 1
+- Geometry: Polygon
+- Purpose: Dissolved Yaoundé study-area boundary used to clip the datasets.
+- Missing values: Not relevant to the spatial boundary itself.
 
-**Format:** Geographic 2D GeoTIFF
+### Yaoundé lines
 
-**Geometry:** Raster grid, with elevation values stored in raster cells.
+**File:** `yaounde_lines.gpkg`
 
-**Coverage:** Cameroon
+- Feature count: 97,404
+- Geometry: Line
+- Key columns: `osm_id`, `name`, `highway`, `waterway`, `other_tags`
+- Waterway features: 2,456
+- Missing values: The `waterway` field contains NULL values for features that are not classified as waterways. These records were retained in the source-derived layer and will only be excluded when extracting waterways for the analysis.
 
-**Resolution:** Approximately 100 m
+### Yaoundé points
 
-**Dimensions:** 5,416 rows × 6,714 columns
+**File:** `yaounde_points.gpkg`
 
-**Key information:** Each raster cell contains an elevation value.
+- Feature count: 240,516
+- Geometry: Point
+- Key columns: `osm_id`, `name`, `other_tags`
+- Missing values: Some descriptive OSM attributes contain NULL values because not every mapped point has all attributes populated.
 
-**Data quality / gaps:** The raster was successfully opened and inspected in QGIS. No specific major data gap was identified during the initial inspection.
+### Yaoundé multilinestrings
 
-## 3. WorldPop Population — Cameroon, 2020
+**File:** `yaounde_multilinestring.gpkg`
 
-**File:** `cmr_ppp_2020.tif`
+- Feature count: 6
+- Geometry: MultiLineString
+- Key columns: `osm_id`, `name`, `type`
+- Missing values: Some descriptive attributes may contain NULL values because not every OSM feature has all attributes populated.
 
-**Source:** WorldPop  
-https://hub.worldpop.org/geodata/summary?id=6347
+---
 
-**Purpose:** Provides estimated population distribution for 2020 and will be used to estimate the population within the potential exposure zones.
+## 2. SRTM Elevation
 
-**Format:** GeoTIFF
+**Source:** WorldPop
 
-**Geometry:** Raster grid
+**Source link:** https://hub.worldpop.org/geodata/summary?id=23306
 
-**CRS:** EPSG:4326 — WGS 84 Geographic
+**Original dataset:** `cmr_srtm_topo_100m.tif`
 
-**Pixel size:** Approximately 0.00083° × -0.00083°
+**Working file:** `yaounde_srtm_100m.tif`
 
-**Dimensions:** 6,087 rows × 6,646 columns
+**Purpose:** Provide elevation data for identifying relatively low-lying terrain within Yaoundé.
 
-**Minimum value:** 0.0007
+- Geometry: Raster grid
+- Dimensions: 196 rows × 306 columns
+- Resolution: Approximately 100 m
+- CRS: WGS 84 geographic coordinate system
+- Main variable: Elevation
 
-**Maximum value:** 256.4467
+Raster feature count is not applicable because this is a grid of cells rather than a vector feature layer.
 
-**Key information:** Estimated population values are stored in raster cells.
+---
 
-**Data quality / gaps:** The raster contains varying population values across cells, including very low values. These values should be distinguished from NoData cells during later analysis.
+## 3. WorldPop Population Counts
 
-## Initial Data Assessment
+**Source:** WorldPop
 
-The three datasets were downloaded from real sources and opened in QGIS. The SRTM and WorldPop datasets were successfully inspected as raster layers. The Cameroon OpenStreetMap PBF was also loaded into QGIS as multiple vector layers. Initial inspection shows that the OSM data contain a large number of features and some sparsely populated attribute fields. Further inspection will be required to isolate the Yaoundé boundary and the relevant mapped waterways for the spatial analysis.
+**Source link:** https://hub.worldpop.org/geodata/summary?id=6347
+
+**Original dataset:** `cmr_ppp_2020.tif`
+
+**Working file:** `yaounde_population_2020.tif`
+
+**Purpose:** Estimate the population located within the potential exposure zone.
+
+- Geometry: Raster grid
+- Dimensions: 196 rows × 306 columns
+- Resolution: Approximately 100 m
+- CRS: WGS 84 geographic coordinate system
+- Main variable: Estimated population per grid cell
+
+Raster feature count is not applicable because this is a grid of population cells rather than a vector feature layer.
+
+---
+
+## Data Preparation
+
+The original Cameroon OSM extract and national raster datasets were processed in QGIS to create Yaoundé-specific working datasets.
+
+The workflow included:
+
+1. Selecting the seven Yaoundé administrative units from the OSM data.
+2. Dissolving them into a single Yaoundé study-area boundary.
+3. Clipping the OSM vector layers to the Yaoundé boundary.
+4. Clipping the SRTM elevation raster to the study area.
+5. Clipping the WorldPop population raster to the study area.
+6. Identifying 2,456 mapped waterway features from the Yaoundé lines dataset.
+
+The original datasets were retained separately from the derived Yaoundé working layers.
+
+---
+
+## Data Quality and Missing Values
+
+NULL values were not automatically removed. Missing values were assessed according to their meaning and relevance to the analysis.
+
+In the OSM data, NULL values are expected in some fields because different feature types do not necessarily have the same attributes. For example, the `waterway` field is not populated for features that are not classified as waterways.
+
+For the waterway analysis, only relevant waterway features will be selected rather than deleting records from the original OSM-derived layer.
+
+The raster datasets are grid-based and contain data cells representing elevation or estimated population. Their dimensions are reported rather than a vector feature count.
